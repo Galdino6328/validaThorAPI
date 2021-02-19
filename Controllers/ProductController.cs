@@ -7,46 +7,46 @@ namespace validaThorAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : Controller
+    public class ProductController : Controller
     {
-        private readonly UserService _usersService;
+        private readonly ProductService _productsService;
 
-        public UserController(UserService usersService)
+        public ProductController(ProductService productsService)
         {
-            _usersService = usersService;
+            _productsService = productsService;
         }
 
         [HttpGet]
-        public ActionResult<List<User>> Get() => _usersService.Get();
+        public ActionResult<List<Product>> Get() => _productsService.Get();
 
-        [HttpGet("{id:length(24)}", Name = "GetUser")]
-        public ActionResult<User> Get(string id)
+        [HttpGet("{id:length(24)}", Name = "GetProduct")]
+        public ActionResult<Product> Get(string id)
         {
-            var user = _usersService.Get(id);
+            var product = _productsService.Get(id);
 
-            if (user == null)
+            if (product == null)
                 return NotFound();
 
-            return user;
+            return product;
         }
 
         [HttpPost]
-        public ActionResult<User> Create(User user)
+        public ActionResult<Product> Create(Product product)
         {
-            _usersService.Create(user);
+            _productsService.Create(product);
 
-            return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
+            return CreatedAtRoute("GetProduct", new { id = product.Id.ToString() }, product);
         }
 
         [HttpPut("{id:length(24)}")]
-        public IActionResult Update(string id, User userIn)
+        public IActionResult Update(string id, Product productIn)
         {
-            var user = _usersService.Get(id);
+            var product = _productsService.Get(id);
 
-            if (user == null)
+            if (product == null)
                 return NotFound();
 
-            _usersService.Update(id, userIn);
+            _productsService.Update(id, productIn);
 
             return NoContent();
         }
@@ -54,12 +54,12 @@ namespace validaThorAPI.Controllers
         [HttpDelete("{id:length(24)}")]
         public IActionResult Delete(string id)
         {
-            var user = _usersService.Get(id);
+            var product = _productsService.Get(id);
 
-            if (user == null)
+            if (product == null)
                 return NotFound();
 
-            _usersService.Remove(user.Id);
+            _productsService.Remove(product.Id);
 
             return NoContent();
         }

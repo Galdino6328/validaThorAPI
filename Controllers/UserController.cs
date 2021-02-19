@@ -1,40 +1,72 @@
-using System.Linq;
-using System.Threading.Tasks;
+using validaThorAPI.Models;
+using validaThorAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-// Core Components
-using MarcattiApi.Data;
-using MarcattiApi.Models;
-using MarcattiApi.Services;
-using System;
+using System.Collections.Generic;
 
-namespace MarcattiApi.Controllers
+namespace validaThorAPI.Controllers
 {
-    [Route("v1/users")]
-    public class AuthLoginController : Controller
+  [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : Controller
     {
-        [HttpPost]
-        [Route("login")]
-        [AllowAnonymous]
-        public async Task<ActionResult<dynamic>> Authenticate(
-                    [FromServices] DataContext context,
-                    [FromBody]UserLogin model)
+        private readonly UserService _usersService;
+
+        public UserController(UserService usersService)
         {
-            var user = await context.Users
-                .AsNoTracking()
-                .Where(x => x.Email == model.Email && x.Password == model.Password)
-                .FirstOrDefaultAsync();
+            _usersService = usersService;
+        }
+
+        [HttpGet]
+        public ActionResult<List<User>> Get() => _usersService.Get();
+
+        [HttpGet("{id:length(24)}", Name = "GetUser")]
+        public ActionResult<User> Get(string id)
+        {
+            var user = _usersService.Get(id);
 
             if (user == null)
-                return NotFound(new { message = "Usuário ou senha inválidos" });
+                return NotFound(new { message = "Usuário não encontrado!"});
 
-            var token = TokenService.GenerateToken(user);
-            return new
-            {
-                user = user.Email,
-                token = token
-            };
+            return user;
+        }
+
+        [HttpPost]
+        public ActionResult<User> Create(User user)
+        {  
+            var checkEmail = _usersService.GetEmail(user.Email);
+            
+            if(checkEmail != null)
+                 return UnprocessableEntity(new { message = "E-Mail já cadastrado" });
+
+           _usersService.Create(user);
+                    
+            return CreatedAtRoute("GetUser", new { id = user.Id.ToString()}, user);
+        }
+
+        [HttpPut("{id:length(24)}")]
+        public IActionResult Update(string id, User userIn)
+        {
+            var user = _usersService.Get(id);               
+
+            if (user == null)
+                return NotFound(new { message = "Usuário não encontrado!"});
+
+            _usersService.Update(id, userIn);
+
+            return Accepted("" , new { message = "Usuário Atualizado!"});
+        }
+
+        [HttpDelete("{id:length(24)}")]
+        public IActionResult Delete(string id)
+        {
+            var user = _usersService.Get(id);
+
+            if (user == null)
+                return NotFound();
+
+            _usersService.Remove(user.Id);
+
+            return NoContent();
         }
     }
 }

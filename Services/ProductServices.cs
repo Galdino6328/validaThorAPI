@@ -1,38 +1,45 @@
 ﻿using System.Linq;
 using MongoDB.Driver;
+using System.Collections.Generic;
+
+//Core Components
 using validaThorAPI.Data;
 using validaThorAPI.Models;
-using System.Collections.Generic;
 
 
 namespace validaThorAPI.Services
 {
-    public class UserService
+    public class ProductService
     {
-        private readonly IMongoCollection<User> _users;
+        private readonly IMongoCollection<Product> _products;
 
-        public UserService(IDatabaseSettings settings)
+        public ProductService(IDatabaseSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
 
-            _users = database.GetCollection<User>(settings.UsersCollectionName);
+            _products = database.GetCollection<Product>(
+                settings.ProductsCollectionName);
         }
 
-        public List<User> Get() => _users.Find(user => true).ToList();
+        public List<Product> Get() => _products.Find(product => true).ToList();
 
-        public User Get(string id) => _users.Find<User>(user => user.Id == id).FirstOrDefault();
+        public Product Get(string id) => _products.Find<Product>(
+            product => product.Id == id).FirstOrDefault();
 
-        public User Create(User user)
+        public Product Create(Product product)
         {
-            _users.InsertOne(user);
-            return user;
+            _products.InsertOne(product);
+            return product;
         }
 
-        public void Update(string id, User userIn) => _users.ReplaceOne(user => user.Id == id, userIn);
+        public void Update(string id, Product productIn) => _products.ReplaceOne(
+            product => product.Id == id, productIn);
 
-        public void Remove(User userIn) => _users.DeleteOne(user => user.Id == userIn.Id);
+        public void Remove(Product productIn) => _products.DeleteOne(
+            product => product.Id == productIn.Id);
 
-        public void Remove(string id) => _users.DeleteOne(user => user.Id == id);
+        public void Remove(string id) => _products.DeleteOne(
+            product => product.Id == id);
     }
 }
